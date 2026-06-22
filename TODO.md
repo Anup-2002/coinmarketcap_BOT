@@ -1,0 +1,11 @@
+- [ ] Update readme.md with:
+  - [ ] Cleaned-up Overview/What it does
+  - [ ] Mermaid workflow diagram for check-login -> fetch -> generate -> post -> outputs
+  - [ ] Improved Setup/Environment Variables (GEMINI_API_KEY, GROQ_API_KEY)
+  - [ ] Clear session (`auth/state.json`) instructions
+  - [ ] Document output artifacts (`output/last_trending.json`, `output/results.json`)
+  - [ ] Document data contracts (coin object shape; message/post payloads)
+  - [ ] Add curl examples for generate-message and post-chat
+  - [ ] Improve troubleshooting and selectors section
+- [ ] Verify no broken Markdown (basic visual check)
+
