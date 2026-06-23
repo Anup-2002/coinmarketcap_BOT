@@ -92,6 +92,7 @@ graph TD
 - Python 3.10+
 - Playwright + Chromium
 - LLM API access:
+  - `OPENAI_API_KEY` (IMP required for openai message generation include this in .env) 
   - `GEMINI_API_KEY` (required for Gemini generation)
   - `GROQ_API_KEY` (optional fallback)
 
