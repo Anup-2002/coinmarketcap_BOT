@@ -1,6 +1,8 @@
 # CoinMarketCap Bot
-DEMO Video :https://youtu.be/vfLEb5vVKTw"
-- An automation service that:
+
+DEMO Video: https://youtu.be/vfLEb5vVKTw
+
+An automation service that:
 
 1) fetches trending coins from CoinMarketCap,
 2) generates a community-style message with an LLM,
@@ -8,57 +10,91 @@ DEMO Video :https://youtu.be/vfLEb5vVKTw"
 
 This project exposes a small **FastAPI** HTTP API to run the steps.
 
-> Note: This uses browser automation (Playwright) and relies on logged-in session cookies stored in `auth/state.json`.
+> Uses browser automation (Playwright) and requires a logged-in session stored in `auth/state.json`.
 
 ---
 
-## Features
+## Overview
 
-- Fetch trending coins from CoinMarketCap (`/fetch-trending`)
-- Generate a human-like community message (`/generate-message`)
-- Post a message to a coin’s community/editor (`/post-chat`)
-- Run the full pipeline: trending -> message -> post (`/full-flow`)
-- Check whether the stored login session is still valid (`/check-login`)
+**Goal:** automate posting short, human-like community comments for trending cryptocurrencies.
+
+**High-level pipeline**
+- scrape trending coins →
+- generate a short message (Gemini, with optional Groq fallback) →
+- post the comment to CoinMarketCap using your logged-in session.
 
 ---
 
-## Project Structure
+## Workflow diagram
+
+```mermaid
+graph TD
+  A[Start] --> B[GET /check-login]
+  B -->|Session active| C[POST /full-flow]
+  B -->|Session expired| Z[Regenerate auth/state.json]
+
+
+  C --> D[Fetch trending coins\nmodules/fetch_trending.py]
+  D --> E[For each coin]
+  E --> F[Generate message\nmodules/message_generator.py]
+  F --> G[Post message\nmodules/chat_poster.py]
+  G --> H[Collect results]
+  H --> Y[Write outputs\noutput/last_trending.json\noutput/results.json]
+
+  G -->|failure| H
+  F -->|Gemini fails| F2[Try Groq (if GROQ_API_KEY is set)]
+  F2 -->|still fails| F3[Use FALLBACK_MESSAGES]
+
+```
+
+---
+
+## Features (API)
+
+- `GET /check-login` — verify `auth/state.json` session
+- `GET /fetch-trending` — fetch top trending coins
+- `POST /generate-message` — generate a short community message for a coin
+- `POST /post-chat` — post a message to a coin community editor
+- `POST /full-flow` — run end-to-end: trending → message → post
+
+---
+
+## Project structure
 
 - `app.py`
-
   - FastAPI app entry point; registers API routers.
 - `api/`
-
-  - HTTP endpoints (routers):
+  - HTTP endpoints:
     - `check_login.py`
     - `fetch_trending.py`
     - `generate_message.py`
     - `post_chat.py`
     - `full_flow.py`
 - `modules/`
-
-  - Core logic called by the API endpoints:
-    - `fetch_trending.py` (Playwright scrape)
-    - `message_generator.py` (Gemini/GLLM message generation)
-    - `chat_poster.py` (Playwright posting)
-    - `login.py` (helper for login/session check)
+  - Core logic called by endpoints:
+    - `fetch_trending.py` (Playwright scrape of CoinMarketCap trending page)
+    - `message_generator.py` (Gemini + Groq fallback)
+    - `chat_poster.py` (Playwright posting with selectors)
+    - `login.py` (helper; session is mainly driven by `auth/state.json`)
 - `config/`
-
-  - `settings.py`: reads environment variables.
+  - `settings.py`: environment configuration
 - `auth/`
-
-  - `state.json`: Playwright storage state (cookies/localStorage) for CoinMarketCap login.
-- `logs/`
-
-  - runtime logs (if configured/created).
+  - `state.json`: Playwright storage state (cookies/localStorage) for CoinMarketCap login
+- `output/`
+  - runtime results:
+    - `last_trending.json`
+    - `results.json`
 
 ---
 
 ## Prerequisites
 
-- Python 3.10+ (recommended)
-- Install Google Gemini API access (for message generation)
-- Playwright dependencies installed
+- Python 3.10+
+- Playwright + Chromium
+- LLM API access:
+  - `OPENAI_API_KEY` (IMP required for openai message generation include this in .env) 
+  - `GEMINI_API_KEY` (required for Gemini generation)
+  - `GROQ_API_KEY` (optional fallback)
 
 ---
 
@@ -90,45 +126,41 @@ pip install -r requirements.txt
 python -m playwright install
 ```
 
-### 4) Configure environment variables
+---
 
-Create a `.env` file in the project root (or export variables in your shell).
+## Environment variables (.env)
 
-Required for message generation:
+`modules/message_generator.py` loads:
 
 ```env
 GEMINI_API_KEY=your_gemini_api_key
+GROQ_API_KEY=your_groq_api_key   # optional
 ```
 
-Optional (currently loaded in `config/settings.py`):
-
-- `HEADLESS=true|false` (posting uses `headless=False` in code; you can adjust if needed)
-- `OPENAI_API_KEY`, `OPENAI_MODEL`, `CMC_EMAIL`, `CMC_PASSWORD` (not required by the current message generator module)
-
-> The API will not work correctly without `auth/state.json` containing a valid logged-in session.
+> `config/settings.py` may read additional env vars, but message generation in this repo primarily uses Gemini + optional Groq.
 
 ---
 
-## Login / Session Setup (`auth/state.json`)
+## Login / Session setup (`auth/state.json`)
 
-The bot uses Playwright `storage_state="auth/state.json"`.
+The bot uses Playwright `storage_state="auth/state.json"` for:
+- posting comments (`modules/chat_poster.py`)
+- scraping (context creation in `modules/fetch_trending.py`)
+- login validity check (`GET /check-login`)
 
-You must create/update `auth/state.json` for your CoinMarketCap account.
+### What you must do
 
-Typical approaches:
-
-- Log in once via a Playwright script (not included as a full “login export” flow in this repo), then save the storage state to `auth/state.json`.
-- Or manually generate `auth/state.json` using Playwright’s `context.storage_state(path=...)`.
-
-After updating `auth/state.json`, verify session validity with:
+1) Log into CoinMarketCap in a Playwright browser context (one-time).
+2) Export storage state to `auth/state.json`.
+3) Validate session using:
 
 - `GET /check-login`
 
+> If you see errors like **"Log in" / "Session expired"**, your session state is no longer valid. Regenerate `auth/state.json`.
+
 ---
 
-## How to Run
-
-### Run the FastAPI server
+## Run the FastAPI server
 
 ```bash
 uvicorn app:app --reload --port 8000
@@ -145,7 +177,6 @@ Server base URL:
 ### 1) Check login session
 
 **Endpoint**
-
 - `GET /check-login`
 
 **Response example**
@@ -157,14 +188,11 @@ Server base URL:
 }
 ```
 
-If session is expired, you’ll receive an error status/message.
-
 ---
 
 ### 2) Fetch trending coins
 
 **Endpoint**
-
 - `GET /fetch-trending`
 
 **Response example**
@@ -199,7 +227,6 @@ If session is expired, you’ll receive an error status/message.
 ### 3) Generate a message for a coin
 
 **Endpoint**
-
 - `POST /generate-message`
 
 **Request body**
@@ -237,10 +264,9 @@ If session is expired, you’ll receive an error status/message.
 ### 4) Post a message
 
 **Endpoint**
-
 - `POST /post-chat`
 
-**Query/body parameters (as used by FastAPI)**
+**Body (JSON)**
 
 - `coin_url` (string)
 - `message` (string)
@@ -269,17 +295,19 @@ curl -X POST "http://127.0.0.1:8000/post-chat" \
 
 ---
 
-### 5) Run the full flow (recommended for automation)
+### 5) Run the full flow (recommended)
 
 **Endpoint**
-
 - `POST /full-flow`
 
 Runs:
-
 - fetch trending coins
-- generate message for each coin
-- post message for each coin
+- generate a message for each coin
+- post the message for each coin
+
+**Output files**
+- `output/last_trending.json` (the coins used in this run)
+- `output/results.json` (per-coin status)
 
 **Response example**
 
@@ -301,39 +329,55 @@ Runs:
 
 ---
 
-## Notes / Behavior Details
+## Data contracts
 
-- Posting uses Playwright with:
+### Coin object (produced by `fetch_trending_coins`)
 
-  - textbox selector: `[data-test="base-editor-editable"]`
-  - sentiment buttons: `[data-test="editor-bullish-button"]` / `[data-test="editor-bearish-button"]`
-  - post button: `[data-test="editor-post-button"]`
-- If CoinMarketCap UI changes and selectors break, you’ll need to update selectors in:
+Expected fields in each coin dictionary:
+- `name`, `symbol`, `price`
+- `change_1h`, `change_24h`
+- `market_cap`, `volume_24h`
+- `dex_liquidity`, `chain`
+- `age`
+- `buys_24h`, `sells_24h`, `total_txns_24h`
+- `url` (CoinMarketCap currency page URL)
 
-  - `modules/chat_poster.py`
-  - `modules/fetch_trending.py`
-- Message generation:
+### Message generation
 
-  - Uses Gemini model `gemini-2.5-flash`
-  - Prompts enforce: max 2 sentences, no emojis/hashtags/bullets, no financial advice.
+`modules/message_generator.py` builds a prompt using:
+- coin name/symbol/price/24h change/market cap/volume
+
+Rules in the prompt:
+- 1–2 sentences
+- no emojis
+- no hashtags
+- no financial advice
+- output text only
+
+### Posting selectors (CoinMarketCap UI)
+
+`modules/chat_poster.py` uses these selectors:
+- textbox: `[data-test="base-editor-editable"]`
+- sentiment buttons:
+  - bullish: `[data-test="editor-bullish-button"]`
+  - bearish: `[data-test="editor-bearish-button"]`
+- post button: `[data-test="editor-post-button"]`
+
+If CoinMarketCap changes their UI/DOM, update selectors in `modules/chat_poster.py`.
 
 ---
 
 ## Troubleshooting
 
 ### Playwright errors
-
 - Install browsers: `python -m playwright install`
-- Ensure you can run Chromium.
+- Confirm Chromium can launch on your system
 
 ### Session errors ("Log in" / session expired)
-
-- Update `auth/state.json`
+- Regenerate `auth/state.json`
 - Re-check with `GET /check-login`
 
 ### LLM / API key errors
-
 - Ensure `.env` includes `GEMINI_API_KEY`
-- Confirm network access to Gemini.
+- If Gemini fails, the module may fall back to `GROQ_API_KEY` (if provided)
 
----

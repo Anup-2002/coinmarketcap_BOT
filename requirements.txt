@@ -10,3 +10,6 @@ pydantic
 aiosqlite
 google-genai
 loguru
+playwright-stealth
+# adding the following dependencies for the new features
+sqlalchemy  
