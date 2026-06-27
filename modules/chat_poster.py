@@ -4,11 +4,10 @@ import random
 import time
 from pathlib import Path
 
-from playwright.sync_api import (
-    sync_playwright,
+from playwright.async_api import (
+    async_playwright,
     TimeoutError as PlaywrightTimeoutError
 )
-
 # ==========================================================
 # Configuration
 # ==========================================================
@@ -212,9 +211,12 @@ def random_post_wait(page):
 # Browser Session Management
 # ==========================================================
 
-def create_browser_session(headless=False):
+import asyncio
 
-    p = sync_playwright().start()
+
+async def create_browser_session(headless=True):
+
+    p = await async_playwright().start()
 
     browser = p.chromium.launch(
 
@@ -232,7 +234,7 @@ def create_browser_session(headless=False):
 
     )
 
-    context = browser.new_context(
+    context = await browser.new_context(
 
         storage_state=AUTH_STATE,
 
@@ -246,7 +248,7 @@ def create_browser_session(headless=False):
 
     )
 
-    page = context.new_page()
+    page = await context.new_page()
 
     page.set_default_timeout(40000)
 

@@ -10,11 +10,15 @@ It verifies the session and returns the login status.
 
 
 
+
+
 @router.post("/check-login")
-def check_login():
-    session = create_browser_session(headless=True)
+async def check_login():
+    p, browser, context, page = await create_browser_session(headless=True)
+
     try:
-        result = verify_session(session)
+        result = await verify_session(page)
         return {"logged_in": result}
+
     finally:
-        close_browser_session(session)
+        await close_browser_session(p, browser, context)
