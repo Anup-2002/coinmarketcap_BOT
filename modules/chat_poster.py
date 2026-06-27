@@ -179,9 +179,9 @@ def random_typing_delay():
     )
 
 
-def random_page_wait(page):
+async def random_page_wait(page):
 
-    page.wait_for_timeout(
+    await page.wait_for_timeout(
 
         random.randint(
 
@@ -194,9 +194,9 @@ def random_page_wait(page):
     )
 
 
-def random_post_wait(page):
+async def random_post_wait(page):
 
-    page.wait_for_timeout(
+    await page.wait_for_timeout(
 
         random.randint(
 
@@ -218,7 +218,7 @@ async def create_browser_session(headless=True):
 
     p = await async_playwright().start()
 
-    browser = p.chromium.launch(
+    browser = await p.chromium.launch(
 
         headless=headless,
 
@@ -267,11 +267,11 @@ async def create_browser_session(headless=True):
     }
 
 
-def close_browser_session(session):
+async def close_browser_session(session):
 
     try:
 
-        session["page"].close()
+        await session["page"].close()
 
     except Exception:
 
@@ -279,7 +279,7 @@ def close_browser_session(session):
 
     try:
 
-        session["context"].close()
+        await session["context"].close()
 
     except Exception:
 
@@ -287,7 +287,7 @@ def close_browser_session(session):
 
     try:
 
-        session["browser"].close()
+        await session["browser"].close()
 
     except Exception:
 
@@ -295,20 +295,20 @@ def close_browser_session(session):
 
     try:
 
-        session["playwright"].stop()
+        await session["playwright"].stop()
 
     except Exception:
 
         pass
 
 
-def verify_session(session):
+async def verify_session(session):
 
     page = session["page"]
 
     try:
 
-        page.goto(
+        await page.goto(
 
             "https://coinmarketcap.com/currencies/bitcoin/",
 
@@ -316,7 +316,7 @@ def verify_session(session):
 
         )
 
-        random_page_wait(page)
+        await random_page_wait(page)
 
         if "login" in page.url.lower():
             print("Redirected to login page.")
@@ -327,7 +327,7 @@ def verify_session(session):
         )
 
         try:
-            textbox.wait_for(
+            await textbox.wait_for(
                 state="visible",
                 timeout=15000
             )
@@ -340,7 +340,7 @@ def verify_session(session):
         )
 
         try:
-            post_button.wait_for(
+            await post_button.wait_for(
                 state="visible",
                 timeout=10000
             )
