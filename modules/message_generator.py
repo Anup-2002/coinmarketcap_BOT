@@ -1,101 +1,235 @@
-from random import choice
+import json
 import os
-import requests
+
 from dotenv import load_dotenv
-from google import genai
+from openai import OpenAI
 
-load_dotenv()
+load_dotenv(override=True)
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-client = genai.Client(api_key=GEMINI_API_KEY)
-
-
-FALLBACK_MESSAGES = [
-    "Interesting movement lately. Curious how it develops.",
-    "This one is getting attention recently.",
-    "Market activity looks notable here.",
-    "Worth keeping an eye on this."
-]
+client = OpenAI(
+    api_key=OPENAI_API_KEY
+)
 
 
-def build_prompt(coin):
+def build_prompt(coins):
+
+    data = []
+
+    for coin in coins:
+
+        data.append(
+            {
+                "name": coin.get("name"),
+                "symbol": coin.get("symbol"),
+                "price": coin.get("price"),
+                "change_24h": coin.get("change_24h"),
+                "change_7d": coin.get("change_7d"),
+                "volume_24h": coin.get("volume_24h"),
+                "cmc_rank": coin.get("cmc_rank")
+            }
+        )
+
     return f"""
-Coin: {coin.get("name")}
-Symbol: {coin.get("symbol")}
-Price: {coin.get("price")}
-24h Change: {coin.get("change_24h")}
-Market Cap: {coin.get("market_cap")}
-Volume: {coin.get("volume_24h")}
+Generate ONE unique CoinMarketCap community comment for EACH coin.
 
-Write a 1–2 sentence casual crypto community message.
-No emojis. No hashtags. No financial advice.
-Only output text.
-""".strip()
+Requirements:
 
-def call_gemini(prompt):
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt
-    )
-    return response.text.strip()
+- 1 to 2 short sentences
+- Human sounding
+- Mention the coin name or symbol
+- Use the provided market data naturally
+- Focus on trend, momentum and activity
+- No emojis
+- No hashtags
+- No financial advice
+- No copy-paste style comments
+- Use different sentence structures
+- Avoid repeatedly saying:
+- trading volume suggests
+- community interest
+- market activity remains active
+- worth watching
+- Do not include explanations.
+- Do not wrap JSON in markdown.
+- Return valid JSON only
+
+Format:
+
+{{
+    "messages": [
+        {{
+            "symbol": "BTC",
+            "message": "BTC has seen steady activity recently. Trading volume remains active and market participants continue to watch its next move."
+        }}
+    ]
+}}
+
+Coins:
+
+{json.dumps(data, ensure_ascii=False)}
+"""
 
 
+def openai_generate_messages(prompt):
 
-def call_groq(prompt):
-    url = "https://api.groq.com/openai/v1/chat/completions"
+    response = client.chat.completions.create(
 
-    headers = {
-        "Authorization": f"Bearer {GROQ_API_KEY}",
-        "Content-Type": "application/json"
-    }
+        model="gpt-4o-mini",
 
-    payload = {
-        "model": "llama-3.1-8b-instant",
-        "messages": [
-            {"role": "user", "content": prompt}
+        messages=[
+            {
+                "role": "user",
+                "content": prompt
+            }
         ],
-        "temperature": 0.7,
-        "max_tokens": 80
-    }
 
-    r = requests.post(url, json=payload, headers=headers, timeout=10)
+        temperature=0.8,
 
-    if r.status_code != 200:
-        print("GROQ ERROR:", r.text)
-        r.raise_for_status()
+        response_format={
+            "type": "json_object"
+        },
 
-    return r.json()["choices"][0]["message"]["content"].strip()
+        max_tokens=4000
+    )
 
-def generate_message(coin):
-    prompt = build_prompt(coin)
+    return response.choices[0].message.content.strip()
+
+
+def build_fallback_message(coin):
+
+    symbol = coin.get(
+        "symbol",
+        "Coin"
+    )
+
+    change_24h = coin.get(
+        "change_24h",
+        0
+    )
 
     try:
-        text = call_gemini(prompt)
-        if text and len(text) > 15:
-            return text
-    except Exception as e:
-        print("Gemini failed:", e)
+
+        change_24h = float(change_24h)
+
+    except Exception:
+
+        change_24h = 0
+
+    if change_24h > 10:
+
+        return (
+            f"{symbol} has been showing strong momentum recently. "
+            f"Market activity remains elevated and traders appear highly engaged."
+        )
+
+    elif change_24h > 0:
+
+        return (
+            f"{symbol} has been moving steadily over the last day. "
+            f"It continues to attract attention from market participants."
+        )
+
+    else:
+
+        return (
+            f"{symbol} has experienced some recent pressure in the market. "
+            f"It will be interesting to see how activity develops from here."
+        )
+
+
+def generate_messages(coins):
+
+    prompt = build_prompt(coins)
 
     try:
-        text = call_groq(prompt)
-        if text and len(text) > 15:
-            return text
-    except Exception as e:
-        print("Groq failed:", e)
-    return choice(FALLBACK_MESSAGES)
+        content = openai_generate_messages(
+            prompt
+        )
 
+        with open(
+            "output/debug_response.txt",
+            "w",
+            encoding="utf-8"
+        ) as f:
+
+            f.write(content)
+
+        result = json.loads(
+            content
+        )
+
+        if (
+            isinstance(result, dict)
+            and "messages" in result
+        ):
+
+            return result[
+                "messages"
+            ]
+
+        raise Exception(
+            "Invalid JSON returned"
+        )
+
+    except Exception as e:
+
+        print(
+            "OpenAI failed:",
+            e
+        )
+
+        fallback = []
+
+        for coin in coins:
+
+            fallback.append(
+                {
+                    "symbol": coin.get(
+                        "symbol",
+                        ""
+                    ),
+                    "message": build_fallback_message(
+                        coin
+                    )
+                }
+            )
+
+        return fallback
 
 
 if __name__ == "__main__":
-    sample = {
-        "name": "Bitcoin",
-        "symbol": "BTC",
-        "price": "$63,000",
-        "change_24h": "1.2%",
-        "market_cap": "$1.2T",
-        "volume_24h": "$18B"
-    }
 
-    print(generate_message(sample))
+    sample = [
+
+        {
+            "name": "Bitcoin",
+            "symbol": "BTC",
+            "price": 108000,
+            "change_24h": 2.3,
+            "change_7d": 5.1,
+            "volume_24h": 45000000000,
+            "cmc_rank": 1
+        },
+
+        {
+            "name": "Ethereum",
+            "symbol": "ETH",
+            "price": 2600,
+            "change_24h": -1.1,
+            "change_7d": -4.2,
+            "volume_24h": 18000000000,
+            "cmc_rank": 2
+        }
+
+    ]
+
+    print(
+        json.dumps(
+            generate_messages(
+                sample
+            ),
+            indent=4
+        )
+    )

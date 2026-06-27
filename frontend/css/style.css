@@ -1,0 +1,34 @@
+body {
+    background-color: #121212;
+}
+
+#log-container {
+    height: 300px;
+    overflow-y: auto;
+    background-color: #000;
+    color: #0f0; /* Terminal green */
+    border-bottom-left-radius: var(--bs-border-radius);
+    border-bottom-right-radius: var(--bs-border-radius);
+}
+
+.log-entry {
+    margin-bottom: 4px;
+    word-wrap: break-word;
+}
+
+.log-time {
+    color: #6c757d;
+    margin-right: 8px;
+}
+
+.log-error {
+    color: #dc3545;
+}
+
+.log-success {
+    color: #198754;
+}
+
+.log-info {
+    color: #0dcaf0;
+}

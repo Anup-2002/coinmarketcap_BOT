@@ -14,24 +14,29 @@ working:
     3. Handle any exceptions that may occur during the process and return an error message if needed.
 '''
 
-class CoinRequest(BaseModel): 
-    url: str
 @router.get("/fetch-trending")
 def fetch_trending_api():
 
-    try:
+    result = fetch_trending_coins()
 
-        coins = fetch_trending_coins()
+    if result["status"] == "error":
 
-        return {
-            "status": "success",
-            "count": len(coins),
-            "coins": coins
-        }
+        return result
 
-    except Exception as e:
+    return {
 
-        return {
-            "status": "error",
-            "message": str(e)
-        }
+        "status":
+        "success",
+
+        "count":
+        len(
+            result["coins"]
+        ),
+
+        "credit_count":
+        result["credit_count"],
+
+        "coins":
+        result["coins"]
+
+    }

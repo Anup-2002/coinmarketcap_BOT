@@ -13,9 +13,7 @@ GEMINI_API_KEY = os.getenv(
 OPENAI_MODEL = os.getenv(
     "OPENAI_MODEL"
 )
-OPENAI_API_KEY = os.getenv(
-    "OPENAI_API_KEY"
-)
+
 
 CMC_EMAIL = os.getenv(
     "CMC_EMAIL"

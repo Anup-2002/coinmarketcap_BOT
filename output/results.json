@@ -1,58 +1,352 @@
-{
-  "status": "completed",
-  "total_coins": 10,
-  "success_count": 8,
-  "failed_count": 2,
-  "results": [
+[
     {
-      "url": "https://coinmarketcap.com/currencies/sp500-tokenized-stock-xstock/",
-      "message": "SPYX looking pretty stable with a small change today. It's always interesting to watch how these tokenized ETFs track.",
-      "status": "success"
+        "name": "Bitcoin",
+        "symbol": "BTC",
+        "url": "https://coinmarketcap.com/currencies/bitcoin/",
+        "status": "success",
+        "message": "Posted successfully"
     },
     {
-      "url": "https://coinmarketcap.com/currencies/myneighboralice/",
-      "message": "Looks like ALICE is getting some attention today, currently sitting around $0.1580 after a significant 24h pump. Always interesting to see tokens making big moves.",
-      "status": "success"
+        "name": "Ethereum",
+        "symbol": "ETH",
+        "url": "https://coinmarketcap.com/currencies/ethereum/",
+        "status": "success",
+        "message": "Posted successfully"
     },
     {
-      "url": "https://coinmarketcap.com/currencies/aerodrome-finance/",
-      "message": "AERO is looking strong today, seeing some nice upward movement.",
-      "status": "success"
+        "name": "Tether USDt",
+        "symbol": "USDT",
+        "url": "https://coinmarketcap.com/currencies/tether/",
+        "status": "success",
+        "message": "Posted successfully"
     },
     {
-      "url": "https://coinmarketcap.com/currencies/bitcoin/",
-      "message": "BTC is holding above $64k today. The market cap is still looking strong at $1.28T.",
-      "status": "success"
+        "name": "BNB",
+        "symbol": "BNB",
+        "url": "https://coinmarketcap.com/currencies/bnb/",
+        "status": "captcha",
+        "message": "Captcha detected"
     },
     {
-      "url": "https://coinmarketcap.com/currencies/bitlayer/",
-      "message": "Looks like BTR is catching some serious momentum today with that 41% climb. Always interesting to see these kind of moves play out.",
-      "status": "error"
+        "name": "USDC",
+        "symbol": "USDC",
+        "url": "https://coinmarketcap.com/currencies/usd-coin/",
+        "status": "captcha",
+        "message": "Captcha detected"
     },
     {
-      "url": "https://coinmarketcap.com/currencies/resolv/",
-      "message": "RESOLV is definitely catching some eyes today, up over 20% and seeing a lot of action. Looks like the price is hovering around $0.01759.",
-      "status": "success"
+        "name": "XRP",
+        "symbol": "XRP",
+        "url": "https://coinmarketcap.com/currencies/xrp/",
+        "status": "captcha",
+        "message": "Captcha detected"
     },
     {
-      "url": "https://coinmarketcap.com/currencies/fusionist/",
-      "message": "ACE is certainly making some noise with that 24% jump today. Volume's looking pretty substantial as well.",
-      "status": "success"
+        "name": "Solana",
+        "symbol": "SOL",
+        "url": "https://coinmarketcap.com/currencies/solana/",
+        "status": "success",
+        "message": "Posted successfully"
     },
     {
-      "url": "https://coinmarketcap.com/currencies/bitway-btw/",
-      "message": "BTW is having a decent day, currently up over 14% and trading around $0.099 with volume at $140M. Interesting to see it move like this.",
-      "status": "success"
+        "name": "TRON",
+        "symbol": "TRX",
+        "url": "https://coinmarketcap.com/currencies/tron/",
+        "status": "success",
+        "message": "Posted successfully"
     },
     {
-      "url": "https://coinmarketcap.com/currencies/clovis/",
-      "message": "Yei Finance (CLO) is definitely catching some eyes today, up almost 19% with over $37 million in volume. Interesting to see it moving like that.",
-      "status": "success"
+        "name": "Hyperliquid",
+        "symbol": "HYPE",
+        "url": "https://coinmarketcap.com/currencies/hyperliquid/",
+        "status": "success",
+        "message": "Posted successfully"
     },
     {
-      "url": "https://coinmarketcap.com/currencies/nasdaq-tokenized-stock-xstock/",
-      "message": "QQQX is showing a little green today. Looks like some decent volume pushing it.",
-      "status": "error"
+        "name": "Dogecoin",
+        "symbol": "DOGE",
+        "url": "https://coinmarketcap.com/currencies/dogecoin/",
+        "status": "captcha",
+        "message": "Captcha detected"
+    },
+    {
+        "name": "UNUS SED LEO",
+        "symbol": "LEO",
+        "url": "https://coinmarketcap.com/currencies/unus-sed-leo/",
+        "status": "success",
+        "message": "Posted successfully"
+    },
+    {
+        "name": "Zcash",
+        "symbol": "ZEC",
+        "url": "https://coinmarketcap.com/currencies/zcash/",
+        "status": "success",
+        "message": "Posted successfully"
+    },
+    {
+        "name": "Stellar",
+        "symbol": "XLM",
+        "url": "https://coinmarketcap.com/currencies/stellar/",
+        "status": "captcha",
+        "message": "Captcha detected"
+    },
+    {
+        "name": "Monero",
+        "symbol": "XMR",
+        "url": "https://coinmarketcap.com/currencies/monero/",
+        "status": "success",
+        "message": "Posted successfully"
+    },
+    {
+        "name": "Canton",
+        "symbol": "CC",
+        "url": "https://coinmarketcap.com/currencies/canton-network/",
+        "status": "success",
+        "message": "Posted successfully"
+    },
+    {
+        "name": "Cardano",
+        "symbol": "ADA",
+        "url": "https://coinmarketcap.com/currencies/cardano/",
+        "status": "captcha",
+        "message": "Captcha detected"
+    },
+    {
+        "name": "Dai",
+        "symbol": "DAI",
+        "url": "https://coinmarketcap.com/currencies/multi-collateral-dai/",
+        "status": "success",
+        "message": "Posted successfully"
+    },
+    {
+        "name": "Chainlink",
+        "symbol": "LINK",
+        "url": "https://coinmarketcap.com/currencies/chainlink/",
+        "status": "success",
+        "message": "Posted successfully"
+    },
+    {
+        "name": "World Liberty Financial USD",
+        "symbol": "USD1",
+        "url": "https://coinmarketcap.com/currencies/usd1/",
+        "status": "success",
+        "message": "Posted successfully"
+    },
+    {
+        "name": "Ethena USDe",
+        "symbol": "USDe",
+        "url": "https://coinmarketcap.com/currencies/ethena-usde/",
+        "status": "success",
+        "message": "Posted successfully"
+    },
+    {
+        "name": "Gram (prev. Toncoin)",
+        "symbol": "GRAM",
+        "url": "https://coinmarketcap.com/currencies/gram/",
+        "status": "success",
+        "message": "Posted successfully"
+    },
+    {
+        "name": "Bitcoin Cash",
+        "symbol": "BCH",
+        "url": "https://coinmarketcap.com/currencies/bitcoin-cash/",
+        "status": "success",
+        "message": "Posted successfully"
+    },
+    {
+        "name": "Litecoin",
+        "symbol": "LTC",
+        "url": "https://coinmarketcap.com/currencies/litecoin/",
+        "status": "success",
+        "message": "Posted successfully"
+    },
+    {
+        "name": "Hedera",
+        "symbol": "HBAR",
+        "url": "https://coinmarketcap.com/currencies/hedera/",
+        "status": "captcha",
+        "message": "Captcha detected"
+    },
+    {
+        "name": "Global Dollar",
+        "symbol": "USDG",
+        "url": "https://coinmarketcap.com/currencies/global-dollar-usdg/",
+        "status": "success",
+        "message": "Posted successfully"
+    },
+    {
+        "name": "Sui",
+        "symbol": "SUI",
+        "url": "https://coinmarketcap.com/currencies/sui/",
+        "status": "captcha",
+        "message": "Captcha detected"
+    },
+    {
+        "name": "Avalanche",
+        "symbol": "AVAX",
+        "url": "https://coinmarketcap.com/currencies/avalanche/",
+        "status": "success",
+        "message": "Posted successfully"
+    },
+    {
+        "name": "PayPal USD",
+        "symbol": "PYUSD",
+        "url": "https://coinmarketcap.com/currencies/paypal-usd/",
+        "status": "success",
+        "message": "Posted successfully"
+    },
+    {
+        "name": "Cronos",
+        "symbol": "CRO",
+        "url": "https://coinmarketcap.com/currencies/cronos/",
+        "status": "success",
+        "message": "Posted successfully"
+    },
+    {
+        "name": "Shiba Inu",
+        "symbol": "SHIB",
+        "url": "https://coinmarketcap.com/currencies/shiba-inu/",
+        "status": "captcha",
+        "message": "Captcha detected"
+    },
+    {
+        "name": "Tether Gold",
+        "symbol": "XAUt",
+        "url": "https://coinmarketcap.com/currencies/tether-gold/",
+        "status": "success",
+        "message": "Posted successfully"
+    },
+    {
+        "name": "Bittensor",
+        "symbol": "TAO",
+        "url": "https://coinmarketcap.com/currencies/bittensor/",
+        "status": "success",
+        "message": "Posted successfully"
+    },
+    {
+        "name": "NEAR Protocol",
+        "symbol": "NEAR",
+        "url": "https://coinmarketcap.com/currencies/near-protocol/",
+        "status": "captcha",
+        "message": "Captcha detected"
+    },
+    {
+        "name": "Uniswap",
+        "symbol": "UNI",
+        "url": "https://coinmarketcap.com/currencies/uniswap/",
+        "status": "success",
+        "message": "Posted successfully"
+    },
+    {
+        "name": "PAX Gold",
+        "symbol": "PAXG",
+        "url": "https://coinmarketcap.com/currencies/pax-gold/",
+        "status": "success",
+        "message": "Posted successfully"
+    },
+    {
+        "name": "World Liberty Financial",
+        "symbol": "WLFI",
+        "url": "https://coinmarketcap.com/currencies/world-liberty-financial-wlfi/",
+        "status": "captcha",
+        "message": "Captcha detected"
+    },
+    {
+        "name": "DeXe",
+        "symbol": "DEXE",
+        "url": "https://coinmarketcap.com/currencies/dexe/",
+        "status": "captcha",
+        "message": "Captcha detected"
+    },
+    {
+        "name": "Aster",
+        "symbol": "ASTER",
+        "url": "https://coinmarketcap.com/currencies/aster/",
+        "status": "success",
+        "message": "Posted successfully"
+    },
+    {
+        "name": "Worldcoin",
+        "symbol": "WLD",
+        "url": "https://coinmarketcap.com/currencies/worldcoin-org/",
+        "status": "captcha",
+        "message": "Captcha detected"
+    },
+    {
+        "name": "OKB",
+        "symbol": "OKB",
+        "url": "https://coinmarketcap.com/currencies/okb/",
+        "status": "success",
+        "message": "Posted successfully"
+    },
+    {
+        "name": "Ripple USD",
+        "symbol": "RLUSD",
+        "url": "https://coinmarketcap.com/currencies/ripple-usd/",
+        "status": "success",
+        "message": "Posted successfully"
+    },
+    {
+        "name": "Ondo",
+        "symbol": "ONDO",
+        "url": "https://coinmarketcap.com/currencies/ondo-finance/",
+        "status": "success",
+        "message": "Posted successfully"
+    },
+    {
+        "name": "Aave",
+        "symbol": "AAVE",
+        "url": "https://coinmarketcap.com/currencies/aave/",
+        "status": "success",
+        "message": "Posted successfully"
+    },
+    {
+        "name": "Polkadot",
+        "symbol": "DOT",
+        "url": "https://coinmarketcap.com/currencies/polkadot-new/",
+        "status": "captcha",
+        "message": "Captcha detected"
+    },
+    {
+        "name": "Mantle",
+        "symbol": "MNT",
+        "url": "https://coinmarketcap.com/currencies/mantle/",
+        "status": "captcha",
+        "message": "Captcha detected"
+    },
+    {
+        "name": "Pi",
+        "symbol": "PI",
+        "url": "https://coinmarketcap.com/currencies/pi/",
+        "status": "captcha",
+        "message": "Captcha detected"
+    },
+    {
+        "name": "USDD",
+        "symbol": "USDD",
+        "url": "https://coinmarketcap.com/currencies/usdd/",
+        "status": "success",
+        "message": "Posted successfully"
+    },
+    {
+        "name": "Internet Computer",
+        "symbol": "ICP",
+        "url": "https://coinmarketcap.com/currencies/internet-computer/",
+        "status": "success",
+        "message": "Posted successfully"
+    },
+    {
+        "name": "Sky",
+        "symbol": "SKY",
+        "url": "https://coinmarketcap.com/currencies/sky/",
+        "status": "success",
+        "message": "Posted successfully"
+    },
+    {
+        "name": "Bitget Token",
+        "symbol": "BGB",
+        "url": "https://coinmarketcap.com/currencies/bitget-token-new/",
+        "status": "captcha",
+        "message": "Captcha detected"
     }
-  ]
-}
+]

@@ -1,266 +1,192 @@
-from playwright.sync_api import sync_playwright
+import json
+import os
+from pathlib import Path
 
-# ----------------- Fetch Trending Coins -----------------
-'''
-This module fetches trending coins from CoinMarketCap using Playwright.
-Functions:
-    - fetch_trending_coins: Fetches the top trending coins and their details.
-    - The function returns a list of dictionaries containing information about each trending coin.
-    - Each dictionary includes the coin's name, symbol, price, changes, market cap, volume, liquidity, chain, age, transactions, and URL.        
-        
-'''
+import requests
+from dotenv import load_dotenv
 
-def fetch_trending_coins():
+load_dotenv()
 
-    with sync_playwright() as p:
+CMC_API_KEY = os.getenv("CMC_API_KEY")
 
-        browser = p.chromium.launch(
-            headless=True
+OUTPUT_FILE = "output/last_trending.json"
+
+
+def fetch_trending_coins(
+        limit=600
+):
+
+    headers = {
+
+        "Accepts": "application/json",
+
+        "X-CMC_PRO_API_KEY": CMC_API_KEY
+
+    }
+
+    url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest"
+
+    params = {
+
+        "start": 1,
+
+        "limit": limit,
+
+        "convert": "USD"
+
+    }
+
+    try:
+
+        response = requests.get(
+
+            url,
+
+            headers=headers,
+
+            params=params,
+
+            timeout=20
+
         )
 
-        try:
+        response.raise_for_status()
 
-            context = browser.new_context(
-                storage_state="auth/state.json"
+        data = response.json()
+
+        credit_count = (
+
+            data["status"]
+            .get(
+                "credit_count",
+                0
             )
+        )
 
-            page = context.new_page()
+        coins = []
 
-            page.goto(
-                "https://coinmarketcap.com/trending-cryptocurrencies/",
-                wait_until="networkidle"
-            )
+        for coin in data["data"]:
 
-            rows = page.locator(
-                "tbody tr"
-            )
+            coins.append(
 
-            coins = []
+                {
 
-            count = rows.count()
+                    "name":
+                    coin["name"],
 
-            for i in range(count):
+                    "symbol":
+                    coin["symbol"],
 
-                if len(coins) == 10:
-                    break
-
-                try:
-
-                    row = rows.nth(i)
-
-                    columns = row.locator(
-                        "td"
-                    )
-
-                    coin_link = row.locator(
-                        'a[href^="/currencies/"]'
-                    )
-
-                    if coin_link.count() == 0:
-                        continue
-
-                    href = coin_link.first.get_attribute(
-                        "href"
-                    )
-
-                    if not href:
-                        continue
-
-                    url = (
-                        "https://coinmarketcap.com"
-                        + href
-                    )
-
-                    name_block = columns.nth(
-                        2
-                    ).inner_text().split(
-                        "\n"
-                    )
-
-                    name = name_block[0].strip()
-
-                    symbol = ""
-
-                    for item in name_block:
-
-                        item = item.strip()
-
-                        if (
-                            item.isupper()
-                            and len(item) <= 10
-                            and item != "BUY"
-                        ):
-
-                            symbol = item
-
-                            break
-
-                    # -------- Price --------
-
-                    price = columns.nth(
-                        3
-                    ).inner_text().strip()
-
-                    # -------- Changes --------
-
-                    change_1h = columns.nth(
-                        4
-                    ).inner_text().strip()
-
-                    change_24h = columns.nth(
-                        5
-                    ).inner_text().strip()
-
-                    # -------- Market Cap --------
-
-                    market_cap = columns.nth(
+                    "price":
+                    round(
+                        coin["quote"]["USD"]["price"],
                         6
-                    ).inner_text().strip()
+                    ),
 
-                    # -------- Volume --------
+                    "change_1h":
+                    coin["quote"]["USD"]["percent_change_1h"],
 
-                    volume_24h = columns.nth(
-                        7
-                    ).inner_text().strip()
+                    "change_24h":
+                    coin["quote"]["USD"]["percent_change_24h"],
 
-                    # -------- Liquidity + Chain --------
+                    "change_7d":
+                    coin["quote"]["USD"]["percent_change_7d"],     
+                    "market_cap":
+                    round(
+                        coin["quote"]["USD"]["market_cap"],
+                        2
+                    ),
+                    "volume_24h":
+                    round(
+                        coin["quote"]["USD"]["volume_24h"],
+                        2
+                    ),
 
-                    liquidity_block = columns.nth(
-                        8
-                    ).inner_text().split(
-                        "\n"
-                    )
+                    "cmc_rank":
+                    coin["cmc_rank"],
 
-                    dex_liquidity = ""
+                    "slug":
+                    coin["slug"],
 
-                    chain = ""
+                    "url":
+                    f"https://coinmarketcap.com/currencies/{coin['slug']}/"
 
-                    if len(liquidity_block) > 0:
+                }
 
-                        dex_liquidity = liquidity_block[
-                            0
-                        ].strip()
+            )
 
-                    if len(liquidity_block) > 1:
+        Path(
+            "output"
+        ).mkdir(
+            exist_ok=True
+        )
 
-                        chain = liquidity_block[
-                            -1
-                        ].strip()
+        with open(
 
-                    # -------- Age --------
+                OUTPUT_FILE,
 
-                    age = columns.nth(
-                        9
-                    ).inner_text().strip()
+                "w",
 
-                    # -------- Transactions --------
+                encoding="utf-8"
 
-                    txns_raw = columns.nth(
-                        10
-                    ).inner_text()
+        ) as f:
 
-                    txns = (
-                        txns_raw
-                        .replace("/", "\n")
-                        .split("\n")
-                    )
+            json.dump(
 
-                    txns = [
+                coins,
 
-                        x.strip()
+                f,
 
-                        for x in txns
+                indent=4,
 
-                        if x.strip()
+                ensure_ascii=False
 
-                    ]
+            )
 
-                    buys_24h = ""
+        print(
 
-                    sells_24h = ""
+            f"Fetched {len(coins)} coins"
 
-                    total_txns_24h = ""
+        )
 
-                    numeric_values = []
+        print(
 
-                    for x in txns:
+            f"Credits consumed: {credit_count}"
 
-                        if (
-                            any(
-                                c.isdigit()
-                                for c in x
-                            )
-                        ):
+        )
 
-                            numeric_values.append(
-                                x
-                            )
+        return {
 
-                    if len(numeric_values) >= 1:
+            "status":
+            "success",
 
-                        buys_24h = numeric_values[0]
+            "credit_count":
+            credit_count,
 
-                    if len(numeric_values) >= 2:
+            "coins":
+            coins
 
-                        sells_24h = numeric_values[1]
+        }
 
-                    if len(numeric_values) >= 3:
+    except Exception as e:
 
-                        total_txns_24h = numeric_values[-1]
+        return {
 
-                    coins.append(
+            "status":
+            "error",
 
-                        {
+            "message":
+            str(e)
 
-                            "name": name,
-
-                            "symbol": symbol,
-
-                            "price": price,
-
-                            "change_1h": change_1h,
-
-                            "change_24h": change_24h,
-
-                            "market_cap": market_cap,
-
-                            "volume_24h": volume_24h,
-
-                            "dex_liquidity": dex_liquidity,
-
-                            "chain": chain,
-
-                            "age": age,
-
-                            "buys_24h": buys_24h,
-
-                            "sells_24h": sells_24h,
-
-                            "total_txns_24h": total_txns_24h,
-
-                            "url": url
-
-                        }
-
-                    )
-
-                except Exception as e:
-
-                    print(
-                        f"Skipping row {i}: {e}"
-                    )
-
-            return coins
-
-        finally:
-
-            browser.close()
+        }
 
 
 if __name__ == "__main__":
 
-    coins = fetch_trending_coins()
+    result = fetch_trending_coins()
 
-    for coin in coins:
+    print(
 
-        print(coin)
+        result["credit_count"]
+
+    )

@@ -1,20 +1,12 @@
 from playwright.sync_api import sync_playwright
 
-# ----------------- Session Management -----------------
-'''
-This module provides functions to manage browser sessions using Playwright.
-Functions:
-    - check_login: Checks if the user is logged in to CoinMarketCap by verifying the
-    presence of the post button on a specific coin's page.
-    - The function returns a dictionary indicating the login status and any relevant messages.
-    - The function handles exceptions and returns an error message if any issues occur during the process.
-'''
+
 def check_login():
 
     with sync_playwright() as p:
 
         browser = p.chromium.launch(
-            headless=True
+            headless=False
         )
 
         try:
@@ -27,8 +19,84 @@ def check_login():
 
             page.goto(
                 "https://coinmarketcap.com/currencies/bitcoin/",
-                wait_until="networkidle"
+                wait_until="domcontentloaded",
+                timeout=60000
             )
+
+            page.wait_for_timeout(
+                5000
+            )
+
+            current_url = page.url.lower()
+
+            # -------------------------------
+            # Login redirect detection
+            # -------------------------------
+
+            if (
+                "/login" in current_url
+                or "signin" in current_url
+                or "auth" in current_url
+            ):
+
+                return {
+                    "status": "expired",
+                    "message": "Redirected to login page"
+                }
+
+            # -------------------------------
+            # Captcha detection
+            # -------------------------------
+
+            page_text = page.locator(
+                "body"
+            ).inner_text().lower()
+
+            captcha_keywords = [
+
+                "captcha",
+
+                "verify you are human",
+
+                "cloudflare",
+
+                "security challenge",
+
+                "robot",
+
+                "unusual traffic",
+
+                "please verify"
+
+            ]
+
+            for keyword in captcha_keywords:
+
+                if keyword in page_text:
+
+                    return {
+                        "status": "captcha",
+                        "message": f"Captcha detected ({keyword})"
+                    }
+
+            # -------------------------------
+            # Editor check
+            # -------------------------------
+
+            textbox = page.locator(
+                '[data-test="base-editor-editable"]'
+            )
+
+            if textbox.count() == 0:
+
+                return {
+                    "status": "error",
+                    "message": "Comment editor not found"
+                }
+
+            # -------------------------------
+            # Post button check
+            # -------------------------------
 
             post_button = page.locator(
                 '[data-test="editor-post-button"]'
@@ -41,16 +109,17 @@ def check_login():
                     "message": "Post button not found"
                 }
 
-            text = (
+            button_text = (
                 post_button
                 .inner_text()
                 .strip()
+                .lower()
             )
 
-            if "Log in" in text:
+            if "log in" in button_text:
 
                 return {
-                    "status": "error",
+                    "status": "expired",
                     "message": "Session expired"
                 }
 
@@ -69,3 +138,10 @@ def check_login():
         finally:
 
             browser.close()
+
+
+if __name__ == "__main__":
+
+    result = check_login()
+
+    print(result)
